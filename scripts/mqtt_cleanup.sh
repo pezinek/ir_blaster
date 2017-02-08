@@ -1,5 +1,5 @@
 #!/bin/sh
-host="${1:-iot}"
+host="${1:-mqtt}"
 
 echo "break this script after a while..."
 echo "cleaning " $host " :: usage: $0 [host]"

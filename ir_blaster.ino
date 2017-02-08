@@ -90,7 +90,7 @@ void setInfraredStatus(ir_status_enum s) {
         state_name="OFF"; 
         break;
     case IR_LISTENING: 
-        state_name="LISTENIG"; 
+        state_name="LISTENING"; 
         irrecv.enableIRIn();
         irrecv.resume();
         break;
@@ -169,11 +169,8 @@ bool infraredSender(const HomieRange& range, const String& value) {
     sendbuf[i]=(unsigned int)(root["raw"][i]);
   }
 
-  //TODO: broken here
   setInfraredStatus(IR_SENDING);
   irsend.sendRaw(sendbuf, len, hz);
-  //unsigned int  applePlay[67] = {9100,4600, 600,650, 600,1750, 600,1750, 600,1750, 600,650, 600,1750, 600,1750, 600,1750, 600,1750, 600,1750, 600,1750, 600,650, 600,650, 600,650, 600,650, 600,1800, 600,650, 600,650, 600,1750, 600,650, 600,650, 600,650, 600,650, 600,650, 550,1800, 550,1800, 600,650, 600,650, 600,1750, 600,1750, 600,650, 600,650, 600};  // UNKNOWN 42D74094
-  //irsend.sendRaw(applePlay,sizeof(applePlay)/sizeof(unsigned int),38);
   
   JsonObject& new_root = jsonBuffer.createObject();
   new_root["frequency"] = hz;

@@ -1,6 +1,6 @@
 
-IR Blaster for ESP8266
-======================
+WiFi IR Blaster for ESP8266
+===========================
 
 This is simple infrared sender/receiver controlled over MQTT.
 It uses the [Homie MQTT convention](https://github.com/marvinroger/homie)
@@ -34,18 +34,19 @@ install [arduino-sep8266fs-plugin](https://github.com/esp8266/arduino-esp8266fs-
 and upload the UI to SPIFS.
 
 Once you upload the sketch, you have to configure the node as described in [Homie Getting Started Tutorial](https://homie-esp8266.readme.io/docs/getting-started)
+(this is where you device gets device id assigned)
 
 Interface
 ---------
 
-- To listen for received IR codes, subscribe to MQTT topic `homie/<sensorid>/infrared/code`:
+- To listen for received IR codes, subscribe to MQTT topic `homie/<deviceid>/infrared/code`:
 
 ```bash
 $ mosquitto_sub -h 192.168.1.50 -v -t 'homie/5ccf7fd38d01/infrared/code'
 homie/5ccf7fd38d01/infrared/code {"name":"UNKNOWN: 0x42D74094","value":1121403028,"frequency":38,"type":{"id":-1,"name":"UNKNOWN"},"raw":[9100,4600,600,650,600,1750,600,1750,600,1750,600,650,600,1750,600,1750,600,1750,600,1750,600,1750,600,1750,600,650,600,650,600,650,600,650,600,1800,600,650,600,650,600,1750,600,650,600,650,600,650,600,650,600,650,600,1750,600,1750,600,650,600,650,600,1750,600,1750,600,650,600,650,600]}
 ```
 
-- To send IR codes, publish to MQTT topic `homie/<sensorid>/infrared/code/set`:
+- To send IR codes, publish to MQTT topic `homie/<deviceid>/infrared/code/set`:
 ```bash
 mosquitto_pub -h 192.168.1.50 -t 'homie/5ccf7fd38d01/infrared/code/set' -m "{"frequency":38,"raw":[900,900,1800,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,900,1800,900]}";
 ```
