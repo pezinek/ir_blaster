@@ -5,6 +5,7 @@ deviceid="${2:?Device ID required as second argument}"
 host="${3:?MQTT server required as third argument}"
 
 sum=$(md5sum "$fw" | awk 'NR==1 { print $1 }')
+echo $sum
 
 mosquitto_pub -h "$host" -t "homie/${deviceid}/\$implementation/ota/checksum" -m "$sum"
 sleep 1

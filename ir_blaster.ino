@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Homie.h>
 #include <IRremoteESP8266.h>
 #include <ArduinoJson.h>
@@ -211,7 +212,7 @@ void setup() {
   irsend.begin();
 
   Homie.setLedPin(LED_PIN, LOW);
-  Homie_setFirmware("homie_test", "1.0.0");
+  Homie_setFirmware("ir_blaster", "1.0.0");
   Homie.setSetupFunction(setupHandler);
   Homie.setLoopFunction(loopHandler);
   Homie.setResetTrigger(REFLASH_PIN, LOW, 5000);
