@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Homie.h>
 #include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRsend.h>
 #include <ArduinoJson.h>
 
 //const int LED_PIN = LED_BUILTIN;
@@ -30,7 +32,7 @@ void updateLed() {
   if (brightness == 0) {
     led_on = false;
   }
-  
+
   if (led_on) {
     analogWrite(LED_PIN, PWMRANGE-brightness);
   } else {
@@ -64,7 +66,7 @@ bool ledStatusHandler(const HomieRange& range, const String& value) {
   return true;
 }
 
-char *code_type2name(int decode_type) {
+const char *code_type2name(int decode_type) {
   if (decode_type == UNKNOWN) {
     return "UNKNOWN";
   } else if (decode_type == NEC) {
@@ -72,11 +74,11 @@ char *code_type2name(int decode_type) {
   } else if (decode_type == SONY) {
     return "SONY";
   } else if (decode_type == RC5) {
-    return "RC5";    
+    return "RC5";
   } else if (decode_type == RC6) {
     return "RC6";
   } else {
-    return "UNKNOWN";   
+    return "UNKNOWN";
   }
 }
 
@@ -84,40 +86,40 @@ char *code_type2name(int decode_type) {
 
 void setInfraredStatus(ir_status_enum s) {
   if (ir_status == s) { return; }
-  
-  char *state_name;
+
+  const char *state_name;
   switch(s) {
-    case IR_OFFLINE: 
-        state_name="OFF"; 
+    case IR_OFFLINE:
+        state_name="OFF";
         break;
-    case IR_LISTENING: 
-        state_name="LISTENING"; 
+    case IR_LISTENING:
+        state_name="LISTENING";
         irrecv.enableIRIn();
         irrecv.resume();
         break;
-    case IR_SENDING: 
-        state_name="SENDING"; 
+    case IR_SENDING:
+        state_name="SENDING";
         //irrecv.disableIRIn();
         break;
     default: state_name="UNKNOWN"; break;
-  }  
+  }
 
-  ir_status = s;  
+  ir_status = s;
 
-  infraredNode.setProperty("status").send(state_name);  
+  infraredNode.setProperty("status").send(state_name);
 }
 
 const int send_buf_len=128;
-unsigned int sendbuf[send_buf_len];
+uint16_t sendbuf[send_buf_len];
 
 void infraredReceiver(decode_results *results) {
   char name[21];
-  int npos=0;  
+  int npos=0;
 
   strcpy(name, code_type2name(results->decode_type));
   npos+=strlen(name);
 
-  snprintf((char*)(&name)+npos, sizeof(name)-npos,": 0x%X", results->value);    
+  snprintf((char*)(&name)+npos, sizeof(name)-npos,": 0x%X", results->value);
   Homie.getLogger() << "IR Code received: " << name << " (len: " << results->rawlen << ")" << endl;
 
   StaticJsonBuffer<1024> jsonBuffer;
@@ -133,15 +135,15 @@ void infraredReceiver(decode_results *results) {
 
   JsonArray& raw = root.createNestedArray("raw");
   for (int i = 1; i < results->rawlen; i++) {
-    raw.add(results->rawbuf[i]*USECPERTICK);
+    raw.add(results->rawbuf[i]*RAWTICK);
   }
 
   char buf[1024];
   root.printTo(buf, sizeof(buf));
-  infraredNode.setProperty("code").send(buf);  
+  infraredNode.setProperty("code").send(buf);
 }
 
-bool infraredSender(const HomieRange& range, const String& value) {  
+bool infraredSender(const HomieRange& range, const String& value) {
   StaticJsonBuffer<3076> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(value);
 
@@ -172,7 +174,7 @@ bool infraredSender(const HomieRange& range, const String& value) {
 
   setInfraredStatus(IR_SENDING);
   irsend.sendRaw(sendbuf, len, hz);
-  
+
   JsonObject& new_root = jsonBuffer.createObject();
   new_root["frequency"] = hz;
   JsonArray& raw = new_root.createNestedArray("raw");
@@ -206,7 +208,6 @@ void setupHandler() {
 void setup() {
   Serial.begin(115200);
   Serial << endl << endl << "[IR_blaster]" << endl;
-  //Serial.println("[homie_test]");
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
   irsend.begin();
@@ -222,7 +223,7 @@ void setup() {
   infraredNode.advertise("code").settable(infraredSender);
   infraredNode.advertise("status");
 
-  Homie.setup();  
+  Homie.setup();
 }
 
 void loop() {
